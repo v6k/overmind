@@ -29,3 +29,30 @@ $ cmake ../ -G "Visual Studio 15 2017 Win64"
 :: Build the project using Visual Studio.
 $ start BasicSc2Bot.sln
 ```
+
+## Mac
+
+Note: Try opening the SC2 game client before installing. If the game crashes before opening, you may need to change your Share name:
+* Open `System Preferences`
+* Click on `Sharing`
+* In the `Computer Name` textfield, change the default 'Macbook Pro' to a single word name (the exact name shouldn't matter, as long as its not the default name)
+
+```bat
+:: Clone the project
+$ git clone --recursive https://github.com/solinas/BasicSc2Bot.git
+$ cd BasicSc2Bot
+
+:: In an editor, open ./sc2client-api/contrib/civetweb/src/civetweb.c
+:: comment out line 17867: #pragma GCC diagnostic ignored "-Werror"
+
+:: Create build directory.
+$ mkdir build
+$ cd build
+
+:: Generate a Makefile
+:: Use 'cmake -DCMAKE_BUILD_TYPE=Debug ../' if debug info is needed
+$ cmake ../
+
+:: Build
+$ make
+```
