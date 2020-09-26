@@ -30,7 +30,7 @@ set(BUILD_API_EXAMPLES OFF CACHE INTERNAL "" FORCE)
 # Disable building of tests in the sc2api submodule.
 set(BUILD_API_TESTS OFF CACHE INTERNAL "" FORCE)
 
-add_subdirectory("s2client-api")
+add_subdirectory("cpp-sc2")
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT BasicSc2Bot)
 set_target_properties(sc2api PROPERTIES FOLDER sc2api)
@@ -56,9 +56,9 @@ endif ()
 file(GLOB SOURCES_BASICSC2BOT "*.cpp" "*.h")
 # Include directories
 include_directories(SYSTEM
-    ${PROJECT_SOURCE_DIR}/s2client-api/include
-    ${PROJECT_SOURCE_DIR}/s2client-api/contrib/protobuf/src
-    ${PROJECT_BINARY_DIR}/s2client-api/generated
+    ${PROJECT_SOURCE_DIR}/cpp-sc2/include
+    ${PROJECT_SOURCE_DIR}/cpp-sc2/contrib/protobuf/src
+    ${PROJECT_BINARY_DIR}/cpp-sc2/generated
 )
 
 # Create the executable.
