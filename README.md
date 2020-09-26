@@ -12,7 +12,7 @@ set up the build process with the correct version of SC2 API so you can focus on
 
 ## Windows
 
-Download and install [Visual Studio 2017](https://visualstudio.microsoft.com/vs/older-downloads/) if you need it. Building with Visual Studio 2019 not yet supported.
+Download and install [Visual Studio 2019](https://www.visualstudio.com/downloads/) if you need it. Building with Visual Studio 2019 not yet supported.
 
 ```bat
 :: Clone the project
@@ -24,7 +24,7 @@ $ mkdir build
 $ cd build
 
 :: Generate VS solution.
-$ cmake ../ -G "Visual Studio 15 2017 Win64"
+$ cmake ../ -G "Visual Studio 16 2019"
 
 :: Build the project using Visual Studio.
 $ start BasicSc2Bot.sln
