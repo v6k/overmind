@@ -42,9 +42,6 @@ Note: Try opening the SC2 game client before installing. If the game crashes bef
 $ git clone --recursive https://github.com/solinas/BasicSc2Bot.git
 $ cd BasicSc2Bot
 
-:: In an editor, open ./sc2client-api/contrib/civetweb/src/civetweb.c
-:: comment out line 17867: #pragma GCC diagnostic ignored "-Werror"
-
 :: Create build directory.
 $ mkdir build
 $ cd build
