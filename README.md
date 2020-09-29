@@ -53,3 +53,16 @@ $ cmake ../
 :: Build
 $ make
 ```
+
+# Playing against the built-in AI
+
+In addition to competing against other bots using the [Sc2LadderServer](https://github.com/solinas/Sc2LadderServer), this bot can play against the built-in
+AI by specifying command line argurments.
+
+For example,
+
+```
+/BasicSc2Bot.exe -c -a zerg -d hard -m CactusValleyLE.SC2Map
+```
+
+will result in the bot playing against the zerg built-in AI on hard difficulty on the map CactusValleyLE.
