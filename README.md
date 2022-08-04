@@ -54,6 +54,26 @@ $ cmake ../
 $ make
 ```
 
+## Linux
+The Linux version is headless, meaning that you will not be able to see your bot 
+First, download the [Linux package](https://github.com/Blizzard/s2client-proto#linux-packages).
+Unzip it to your home directory. 
+The directory should read as `/home/<USER>/StarCraftII/`.
+
+Rename the `Maps` directory to lowercase, and place any downloaded maps inside this directory:
+```bash
+$ mv /home/<USER>/StarCraftII/Maps /home/<USER>/StarCraftII/maps
+```
+
+Finally, create a directory (note the added space) which contains a file `ExecuteInfo.txt`, which lists the executable directory:
+```bash
+$ mkdir "/home/<USER>/StarCraft II"
+$ echo "executable = /home/<USER>/StarCraftII/Versions/Base75689/SC2_x64" > "/home/<USER>/StarCraft II/ExecuteInfo.txt"
+```
+The `Base75689` will need to match the correct version which matches the version you downloaded. To check, navigate to `/home/<USER>/StarCraftII/Versions/`.
+
+Remember to replace `<USER>` with the name of your user profile.
+
 # Playing against the built-in AI
 
 In addition to competing against other bots using the [Sc2LadderServer](https://github.com/solinas/Sc2LadderServer), this bot can play against the built-in
