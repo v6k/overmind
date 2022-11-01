@@ -353,3 +353,9 @@ MigrationBackup/
 .ionide/
 
 build/
+
+cpp-sc2/
+
+
+.DS_Store
+.vscode/
