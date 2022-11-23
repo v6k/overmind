@@ -1,5 +1,6 @@
 #include "BasicSc2Bot.h"
 
+bool attack = false;
 bool BasicSc2Bot::TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_TYPEID unit_type){
     const Unit* unit_to_build = GetProbe(ability_type_for_structure);
 
@@ -59,7 +60,7 @@ size_t BasicSc2Bot::CountUnitType(UNIT_TYPEID unit_type){
         return false;
     }
 
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) > 3){
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) >= 3){
         return false;
     }
 
@@ -89,7 +90,8 @@ void BasicSc2Bot::TryAttacWithStalker(){
     Units units = Observation()->GetUnits(Unit::Alliance::Self);
     const GameInfo& game_info = Observation()->GetGameInfo();
 
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_STALKER) > 10){
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_STALKER) >= 10 || attack){
+        attack = true;
         for (const auto& u : units){
             if (u->unit_type == UNIT_TYPEID::PROTOSS_STALKER){
                 Actions()->UnitCommand(u, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
@@ -260,7 +262,7 @@ const Unit* BasicSc2Bot::FindNearestGateway(const Point2D& start) {
 void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
     switch (unit->unit_type.ToType()){
         case UNIT_TYPEID::PROTOSS_NEXUS:{
-            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) < 22){
+            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) < 20){
                 Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_PROBE);
             }
             break;
