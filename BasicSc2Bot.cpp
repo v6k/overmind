@@ -42,8 +42,9 @@ bool BasicSc2Bot::TryBuildAssimilator(){
 }
 
 
+
 void BasicSc2Bot::OnGameStart() { 
-    std::cout << "Hello, World!" << std::endl;
+    first_chrono = true;
     return;
 }
 
@@ -98,6 +99,25 @@ void BasicSc2Bot::TryAttacWithStalker(){
  }
 
 
+void BasicSc2Bot::TryChronoBoost() {
+    const ObservationInterface* observation = Observation();
+    const GameInfo& game_info = Observation()->GetGameInfo();
+    const Unit* nexus = FindNexus();
+    if (first_chrono && (nexus->energy >= 50)) {
+        //Actions()->UnitCommand(nexus, );
+        // ABILITY_ID::EFFECT_CHRONOBOOST does not work, ABILITY_ID(3755) is chronoboost
+        Actions()->UnitCommand(nexus, ABILITY_ID(3755), nexus);
+        first_chrono = false;
+    }
+    else if (nexus->energy >= 50) {
+        const Unit* gateway_target = FindNearestGateway(nexus->pos);
+        if (gateway_target) {
+            Actions()->UnitCommand(nexus, ABILITY_ID(3755), gateway_target);
+        }
+    }
+}
+
+
 const Unit* BasicSc2Bot::GetProbe(ABILITY_ID ability_type_for_structure){
     // Get a probe which is not harvesting vespene gas and has order of building
     Units units = Observation()->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::PROTOSS_PROBE));
@@ -136,6 +156,7 @@ void BasicSc2Bot::OnStep() {
     TryBuildGateway();
     TryBuildCyberneticsCore();
     TryAttacWithStalker();
+    TryChronoBoost();
     return; 
 }
 
@@ -199,6 +220,42 @@ const Unit* BasicSc2Bot::FindNearestAssimilator(const Point2D& start){
     }
     return target;
 }
+
+
+const Unit* BasicSc2Bot::FindNexus() {
+    Units units = Observation()->GetUnits(Unit::Alliance::Self);
+    float distance = std::numeric_limits<float>::max();
+    const Unit* target = nullptr;
+    for (const auto& u : units) {
+        if (u->unit_type == UNIT_TYPEID::PROTOSS_NEXUS) {
+            float d = DistanceSquared2D(u->pos, Point2D(0,0));
+            if (d < distance) {
+                distance = d;
+                target = u;
+            }
+        }
+    }
+    return target;
+}
+
+const Unit* BasicSc2Bot::FindNearestGateway(const Point2D& start) {
+    Units units = Observation()->GetUnits(Unit::Alliance::Self);
+    float distance = std::numeric_limits<float>::max();
+    const Unit* target = nullptr;
+    for (const auto& u : units) {
+        if (u->unit_type == UNIT_TYPEID::PROTOSS_GATEWAY) {
+            float d = DistanceSquared2D(u->pos, start);
+            if (d < distance) {
+                distance = d;
+                target = u;
+            }
+        }
+    }
+    return target;
+}
+
+
+
 
 void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
     switch (unit->unit_type.ToType()){
