@@ -8,10 +8,6 @@ bool BasicSc2Bot::TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_
     const Unit* unit_to_build = nullptr;
     Units units = observation->GetUnits(Unit::Alliance::Self);
 
-    // For getting vespene geyser location, and building assimilator on top of it
-    const Unit* vespene_geyser = nullptr;
-    Units vespene_gas = observation->GetUnits(Unit::Alliance::Neutral);
-
     for (const auto& unit : units){
         for (const auto& order : unit->orders){
             if (order.ability_id == ability_type_for_structure){
@@ -25,7 +21,7 @@ bool BasicSc2Bot::TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_
 
     float rx = GetRandomScalar();
     float ry = GetRandomScalar();
-     
+    
     if (ability_type_for_structure != ABILITY_ID::BUILD_ASSIMILATOR){
         Actions()->UnitCommand(unit_to_build, ability_type_for_structure,
                 Point2D(unit_to_build->pos.x + rx * 15.0f, unit_to_build->pos.y + ry * 15.0f));
@@ -54,7 +50,7 @@ bool BasicSc2Bot::TryBuildAssimilator(){
         return false;
     }
 
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_ASSIMILATOR) > 2){
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_ASSIMILATOR) >= 2){
         return false;
     }
 
@@ -145,14 +141,26 @@ const Unit* BasicSc2Bot::FindNearestMineralPatch(const Point2D& start){
 
 const Unit* BasicSc2Bot::FindNearestVespeneGeyser(const Point2D& start){
     Units units = Observation()->GetUnits(Unit::Alliance::Neutral);
+    const GameInfo& game_info = Observation()->GetGameInfo();
     float distance = std::numeric_limits<float>::max();
     const Unit* target = nullptr;
+    
     for (const auto& u : units){
-        if (u->unit_type == UNIT_TYPEID::NEUTRAL_VESPENEGEYSER){
-            float d = DistanceSquared2D(u->pos, start);
-            if (d<distance){
-                distance = d;
-                target = u;
+        if (game_info.local_map_path != "ProximaStationLE.SC2Map"){
+            if (u->unit_type == UNIT_TYPEID::NEUTRAL_VESPENEGEYSER){
+                float d = DistanceSquared2D(u->pos, start);
+                if (d<distance){
+                    distance = d;
+                    target = u;
+                }
+            }
+        }else{
+            if (u->unit_type == UNIT_TYPEID::NEUTRAL_SPACEPLATFORMGEYSER){
+                float d = DistanceSquared2D(u->pos, start);
+                if (d<distance){
+                    distance = d;
+                    target = u;
+                }
             }
         }
     }
