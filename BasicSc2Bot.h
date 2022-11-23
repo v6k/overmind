@@ -32,6 +32,7 @@ public:
 	void TryChronoBoost();
 private:
 	bool first_chrono;
+	bool building_gateway;
 };
 
 #endif

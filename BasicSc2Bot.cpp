@@ -69,6 +69,7 @@ bool BasicSc2Bot::TryBuildAssimilator(){
 
 void BasicSc2Bot::OnGameStart() { 
     first_chrono = true;
+    building_gateway = false;
     return;
 }
 
@@ -90,7 +91,7 @@ size_t BasicSc2Bot::CountUnitType(UNIT_TYPEID unit_type){
     if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) > 5){
         return false;
     }
-
+    building_gateway = true;
     return TryBuildStructure(ABILITY_ID::BUILD_GATEWAY);
  }
 
@@ -101,7 +102,7 @@ size_t BasicSc2Bot::CountUnitType(UNIT_TYPEID unit_type){
         return false;
     }
 
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) < 1){
+    if (building_gateway){
         return false;
     }
 
