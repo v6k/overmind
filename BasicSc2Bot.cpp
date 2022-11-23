@@ -124,7 +124,6 @@ void BasicSc2Bot::TryChronoBoost() {
     const GameInfo& game_info = Observation()->GetGameInfo();
     const Unit* nexus = FindNexus();
     if (first_chrono && (nexus->energy >= 50)) {
-        //Actions()->UnitCommand(nexus, );
         // ABILITY_ID::EFFECT_CHRONOBOOST does not work, ABILITY_ID(3755) is chronoboost
         Actions()->UnitCommand(nexus, ABILITY_ID(3755), nexus);
         first_chrono = false;
