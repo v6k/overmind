@@ -111,13 +111,56 @@ void BasicSc2Bot::TryAttacWithStalker(){
     if (CountUnitType(UNIT_TYPEID::PROTOSS_STALKER) > 10){
         for (const auto& u : units){
             if (u->unit_type == UNIT_TYPEID::PROTOSS_STALKER){
-                Actions()->UnitCommand(u, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
+                Actions()->UnitCommand(u, ABILITY_ID::ATTACK_ATTACK, enemyBase);
             }
         }
     }
  }
 
+void BasicSc2Bot::TryScoutWithProbe() {
+
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) < 1) {
+        return;
+    }
+
+    const ObservationInterface* observation = Observation();
+    const GameInfo& game_info = Observation()->GetGameInfo();
+    Units units = Observation()->GetUnits(Unit::Alliance::Self);
+    std::vector<Point2D> enemyStartLocation = game_info.enemy_start_locations;
+
+    for (const auto& u:units) {
+        if (u->unit_type == UNIT_TYPEID::PROTOSS_PROBE) {
+            scout = u;
+            break;
+        }
+    }
+    
+    for (int i = 0; i < enemyStartLocation.size(); i++) {
+        Actions()->UnitCommand(scout, ABILITY_ID::ATTACK_ATTACK, enemyStartLocation[i], true);
+    }
+
+    scouting = true;
+}
+
+void BasicSc2Bot::checkScout() {
+    if (!(scout->is_alive)) {
+        scouted = true;
+        Point2D scoutTempLocation;
+        scoutTempLocation.x = scout->pos.x;
+        scoutTempLocation.y = scout->pos.y;
+        scouting = false;
+        std::cout << "scouted base at " << scoutTempLocation.x << ", " << scoutTempLocation.y << "\n";
+        enemyBase = scoutTempLocation;
+    }
+}
+
 void BasicSc2Bot::OnStep() {
+    if (!scouted && !scouting) {
+        TryScoutWithProbe();
+    }
+    if (!scouted) {
+        checkScout();
+    }
     TryBuildPylon();
     TryBuildAssimilator();
     TryBuildGateway();
@@ -184,7 +227,10 @@ void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
             break;
         }
         case UNIT_TYPEID::PROTOSS_PROBE:{
-            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) > 15){
+            if (scouting) {
+                break;
+            }
+            else if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) > 15){
                 const Unit* assimilator_target = FindNearestAssimilator(unit->pos);
                 if (!assimilator_target){
                     break;

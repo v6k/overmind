@@ -27,7 +27,14 @@ public:
 	const Unit* FindNearestVespeneGeyser(const Point2D& start);
 	const Unit* FindNearestAssimilator(const Point2D& start);
 	void TryAttacWithStalker();
+	void TryScoutWithProbe();
+	void checkScout();
 private:
+	Point2D enemyBase;
+	bool scouted = false;
+	bool scouting = false;
+	const Unit* scout;
+	Point3D scoutLocation;
 };
 
 #endif
