@@ -103,18 +103,22 @@ size_t BasicSc2Bot::CountUnitType(UNIT_TYPEID unit_type){
     return TryBuildStructure(ABILITY_ID::BUILD_CYBERNETICSCORE);
  }
 
-void BasicSc2Bot::TryAttacWithStalker(){
+bool BasicSc2Bot::TryAttackWithStalker(){
     const ObservationInterface* observation = Observation();
     Units units = Observation()->GetUnits(Unit::Alliance::Self);
     const GameInfo& game_info = Observation()->GetGameInfo();
 
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_STALKER) > 10){
-        for (const auto& u : units){
-            if (u->unit_type == UNIT_TYPEID::PROTOSS_STALKER){
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_STALKER) > 5) {
+        for (const auto& u : units) {
+            if (u->unit_type == UNIT_TYPEID::PROTOSS_STALKER) {
+                std::cout << u->tag << std::endl;
                 Actions()->UnitCommand(u, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
+                return true;
             }
         }
     }
+
+    return false;
  }
 
 void BasicSc2Bot::OnStep() {
@@ -122,7 +126,8 @@ void BasicSc2Bot::OnStep() {
     TryBuildAssimilator();
     TryBuildGateway();
     TryBuildCyberneticsCore();
-    TryAttacWithStalker();
+    // StalkerCommander();
+    TryAttackWithStalker();
     return; 
 }
 
@@ -198,6 +203,9 @@ void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
                 Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
             }
         }
+        case UNIT_TYPEID::PROTOSS_STALKER: {
+            break;
+        }
         case UNIT_TYPEID::PROTOSS_GATEWAY:{
             Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_STALKER);
         }
@@ -212,10 +220,68 @@ void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
 void BasicSc2Bot::OnUnitCreated(const Unit* unit) {
    switch (unit->unit_type.ToType()){
         case UNIT_TYPEID::PROTOSS_STALKER:{
-            std::cout << "STALKER CREATED" << std::endl;
+            //std::cout << "STALKER CREATED" << std::endl;
         }
         default: {
             break;
         }
     }
 }
+
+void BasicSc2Bot::StalkerDefendBase(const Unit *stalker, const Unit *attacker) {
+    Actions()->UnitCommand(stalker, ABILITY_ID::ATTACK_ATTACK, attacker);
+
+}
+
+void BasicSc2Bot::StalkerCommander() {
+    const ObservationInterface* observation = Observation();
+    Units units = Observation()->GetUnits(Unit::Alliance::Self);
+    Units enemies = Observation()->GetUnits(Unit::Enemy);
+    const GameInfo& game_info = Observation()->GetGameInfo();
+    const Unit *nexsus = nullptr;
+    const Unit *attacker = nullptr;
+    float distance_to_spawn;
+
+    // try to attack when no enemies seen
+    if (enemies.empty()) {
+        TryAttackWithStalker();
+        return;
+    }
+
+    // get nexsus to use as starting point to defend
+    for (const auto& u : units) {
+        if (u->unit_type == UNIT_TYPEID::PROTOSS_NEXUS) {
+            nexsus = u;
+        }
+    }
+
+    // get an attacker in the defense range
+    for (const auto& e : enemies) {
+        distance_to_spawn = Distance3D(nexsus->pos, e->pos);
+        if (distance_to_spawn < defense_range) {
+            attacker = e;
+            break;
+        }
+    }
+
+    // no enemy within range
+    if (attacker == nullptr) {
+        TryAttackWithStalker();
+    }
+    
+    // stalkers in defense range attack the attacker
+    for (const auto& u : units) {
+		if (u->unit_type == UNIT_TYPEID::PROTOSS_STALKER) {
+			distance_to_spawn = Distance3D(nexsus->pos, u->pos);
+			if (distance_to_spawn < defense_range) {
+                StalkerDefendBase(u, attacker);
+			}
+			else { // continue attacking when outside of defense range
+                if (!TryAttackWithStalker()) { // comeback if attack is not ready
+                    Actions()->UnitCommand(u, ABILITY_ID::SMART, nexsus);
+                 }
+			}
+		}
+	}
+}
+

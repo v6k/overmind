@@ -26,8 +26,11 @@ public:
 	const Unit* FindNearestMineralPatch(const Point2D& start);
 	const Unit* FindNearestVespeneGeyser(const Point2D& start);
 	const Unit* FindNearestAssimilator(const Point2D& start);
-	void TryAttacWithStalker();
+	bool TryAttackWithStalker();
+	void StalkerDefendBase(const Unit *stalker, const Unit *attacker);
+	void StalkerCommander();
 private:
+	int defense_range = 30;  // can play around with values
 };
 
 #endif
