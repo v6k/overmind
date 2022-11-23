@@ -1,23 +1,7 @@
 #include "BasicSc2Bot.h"
 
 bool BasicSc2Bot::TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_TYPEID unit_type){
-    const ObservationInterface* observation = Observation();
-
-    // If  a unit already is building a supply structure of this type, do nothing.
-    // Also get an scv to build the structure.
-    const Unit* unit_to_build = nullptr;
-    Units units = observation->GetUnits(Unit::Alliance::Self);
-
-    for (const auto& unit : units){
-        for (const auto& order : unit->orders){
-            if (order.ability_id == ability_type_for_structure){
-                return false;
-            }
-        }
-        if (unit->unit_type == unit_type){
-            unit_to_build = unit;
-        }
-    }
+    const Unit* unit_to_build = GetProbe(ability_type_for_structure);
 
     float rx = GetRandomScalar();
     float ry = GetRandomScalar();
@@ -74,7 +58,7 @@ size_t BasicSc2Bot::CountUnitType(UNIT_TYPEID unit_type){
         return false;
     }
 
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) > 1){
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) > 3){
         return false;
     }
 
@@ -113,9 +97,42 @@ void BasicSc2Bot::TryAttacWithStalker(){
     }
  }
 
+
+const Unit* BasicSc2Bot::GetProbe(ABILITY_ID ability_type_for_structure){
+    // Get a probe which is not harvesting vespene gas and has order of building
+    Units units = Observation()->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::PROTOSS_PROBE));
+    for (const auto& unit : units){
+        for (const auto& order : unit->orders){
+            if (order.ability_id != ABILITY_ID::HARVEST_GATHER && order.ability_id != ability_type_for_structure){
+                return unit;
+            }
+        }
+    }
+
+    return units[0];
+ }
+
+ void BasicSc2Bot::TryFillVespeneGas(){
+    // Mine vespene if vespene gas not full
+    Units vespene_gas = Observation()->GetUnits(Unit::Alliance::Self, IsVisibleGeyser());
+    const auto unit = GetProbe(ABILITY_ID::HARVEST_GATHER);
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_ASSIMILATOR) == 0){
+        return;
+    }
+    for (const auto& gas : vespene_gas) {
+        if (gas->assigned_harvesters < gas->ideal_harvesters){
+            Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, gas);
+        }else if (gas->assigned_harvesters > gas->ideal_harvesters){
+            const Unit* mineral_target = FindNearestMineralPatch(unit->pos);
+            Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
+        }
+    }         
+ }
+
 void BasicSc2Bot::OnStep() {
     TryBuildPylon();
     TryBuildAssimilator();
+    TryFillVespeneGas();
     TryBuildGateway();
     TryBuildCyberneticsCore();
     TryAttacWithStalker();
@@ -186,25 +203,18 @@ const Unit* BasicSc2Bot::FindNearestAssimilator(const Point2D& start){
 void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
     switch (unit->unit_type.ToType()){
         case UNIT_TYPEID::PROTOSS_NEXUS:{
-            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) < 25){
-            Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_PROBE);
+            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) < 22){
+                Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_PROBE);
             }
             break;
         }
         case UNIT_TYPEID::PROTOSS_PROBE:{
-            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) > 15){
-                const Unit* assimilator_target = FindNearestAssimilator(unit->pos);
-                if (!assimilator_target){
-                    break;
-                }
-                Actions()->UnitCommand(unit, ABILITY_ID::SMART, assimilator_target);
-           }else{
-                const Unit* mineral_target = FindNearestMineralPatch(unit->pos);
-                if (!mineral_target){
-                    break;
-                }
-                Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
+            // mine mineral if idle
+            const Unit* mineral_target = FindNearestMineralPatch(unit->pos);
+            if (!mineral_target){
+                break;
             }
+            Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
         }
         case UNIT_TYPEID::PROTOSS_GATEWAY:{
             Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_STALKER);

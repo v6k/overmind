@@ -27,6 +27,8 @@ public:
 	const Unit* FindNearestVespeneGeyser(const Point2D& start);
 	const Unit* FindNearestAssimilator(const Point2D& start);
 	void TryAttacWithStalker();
+	void TryFillVespeneGas();
+	const Unit* GetProbe(ABILITY_ID ability_type_for_structure);
 private:
 };
 
