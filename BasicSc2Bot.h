@@ -26,8 +26,12 @@ public:
 	const Unit* FindNearestMineralPatch(const Point2D& start);
 	const Unit* FindNearestVespeneGeyser(const Point2D& start);
 	const Unit* FindNearestAssimilator(const Point2D& start);
+	const Unit* FindNexus();
+	const Unit* FindNearestGateway(const Point2D& start);
 	void TryAttacWithStalker();
+	void TryChronoBoost();
 private:
+	bool first_chrono;
 };
 
 #endif
