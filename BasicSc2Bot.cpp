@@ -54,6 +54,10 @@ bool BasicSc2Bot::TryBuildAssimilator(){
         return false;
     }
 
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) < 1) {
+        return false;
+    }
+
     if (CountUnitType(UNIT_TYPEID::PROTOSS_ASSIMILATOR) > 2){
         return false;
     }
@@ -79,7 +83,11 @@ size_t BasicSc2Bot::CountUnitType(UNIT_TYPEID unit_type){
         return false;
     }
 
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) > 1){
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_ASSIMILATOR) == 1) {
+        return false;
+    }
+
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) > 5){
         return false;
     }
 
@@ -235,7 +243,7 @@ void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
     switch (unit->unit_type.ToType()){
         case UNIT_TYPEID::PROTOSS_NEXUS:{
             
-            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) < 25){
+            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) < 22){
                 Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_PROBE);
             }
             break;
