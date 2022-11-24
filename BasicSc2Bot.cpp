@@ -67,7 +67,7 @@ size_t BasicSc2Bot::CountUnitType(UNIT_TYPEID unit_type){
         return false;
     }
 
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) > 5){
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) > 3){
         return false;
     }
     building_gateway = true;
@@ -159,9 +159,9 @@ void BasicSc2Bot::OnStep() {
     TryBuildPylon();
     TryBuildAssimilator();
     TryFillVespeneGas();
-    TryBuildGateway();
     TryBuildCyberneticsCore();
     TryAttacWithStalker();
+    TryBuildGateway();
     TryChronoBoost();
     return; 
 }
