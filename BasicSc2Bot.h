@@ -27,10 +27,15 @@ public:
 	const Unit* FindNearestVespeneGeyser(const Point2D& start);
 	const Unit* FindNearestAssimilator(const Point2D& start);
 	bool TryAttackWithStalker();
-	void StalkerDefendBase(const Unit *stalker, const Unit *attacker);
+	void StalkerAttack(const Unit *stalker);
+	void StalkerDefend(const Unit *stalker, const Unit *attacker);
 	void StalkerCommander();
+	const Unit* FindNearestEnemy(const Point2D& start);
 private:
-	int defense_range = 30;  // can play around with values
+	// can play around with values
+	int defense_range = pow(double(30), double(2)); // defense_range^2 
+	int stalkers_to_build = 40;
+
 };
 
 #endif

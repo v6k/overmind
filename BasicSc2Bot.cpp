@@ -107,27 +107,27 @@ bool BasicSc2Bot::TryAttackWithStalker(){
     const ObservationInterface* observation = Observation();
     Units units = Observation()->GetUnits(Unit::Alliance::Self);
     const GameInfo& game_info = Observation()->GetGameInfo();
+    bool stalker_attacking = false;
 
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_STALKER) > 5) {
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_STALKER) > stalkers_to_build) {
         for (const auto& u : units) {
             if (u->unit_type == UNIT_TYPEID::PROTOSS_STALKER) {
-                std::cout << u->tag << std::endl;
                 Actions()->UnitCommand(u, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
-                return true;
+                stalker_attacking = true;
             }
         }
     }
 
-    return false;
+    return stalker_attacking;
  }
+
 
 void BasicSc2Bot::OnStep() {
     TryBuildPylon();
     TryBuildAssimilator();
     TryBuildGateway();
     TryBuildCyberneticsCore();
-    // StalkerCommander();
-    TryAttackWithStalker();
+    StalkerCommander();
     return; 
 }
 
@@ -201,13 +201,23 @@ void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
                     break;
                 }
                 Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
+                break;
             }
         }
         case UNIT_TYPEID::PROTOSS_STALKER: {
+            Units units = Observation()->GetUnits();
+            const Unit* nexsus = nullptr;
+            for (auto& u : units) {
+                if (u->unit_type == UNIT_TYPEID::PROTOSS_NEXUS) {
+                    nexsus = u;
+                }
+            }
+            Actions()->UnitCommand(unit, ABILITY_ID::MOVE_MOVE, nexsus);
             break;
         }
         case UNIT_TYPEID::PROTOSS_GATEWAY:{
             Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_STALKER);
+            break;
         }
 
         default: {
@@ -228,9 +238,14 @@ void BasicSc2Bot::OnUnitCreated(const Unit* unit) {
     }
 }
 
-void BasicSc2Bot::StalkerDefendBase(const Unit *stalker, const Unit *attacker) {
-    Actions()->UnitCommand(stalker, ABILITY_ID::ATTACK_ATTACK, attacker);
+void BasicSc2Bot::StalkerAttack(const Unit* stalker) {
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_STALKER) > stalkers_to_build) {
+        Actions()->UnitCommand(stalker, ABILITY_ID::ATTACK_ATTACK, Observation()->GetGameInfo().enemy_start_locations.front());
+    }
+}
 
+void BasicSc2Bot::StalkerDefend(const Unit *stalker, const Unit *attacker) {
+    Actions()->UnitCommand(stalker, ABILITY_ID::ATTACK_ATTACK, attacker);
 }
 
 void BasicSc2Bot::StalkerCommander() {
@@ -255,33 +270,50 @@ void BasicSc2Bot::StalkerCommander() {
         }
     }
 
-    // get an attacker in the defense range
-    for (const auto& e : enemies) {
-        distance_to_spawn = Distance3D(nexsus->pos, e->pos);
-        if (distance_to_spawn < defense_range) {
-            attacker = e;
-            break;
-        }
+    // get an attacker in the defense range of nexsus
+    attacker = FindNearestEnemy(nexsus->pos);
+    if (DistanceSquared2D(nexsus->pos, attacker->pos) > defense_range) {
+        attacker = nullptr;
     }
 
-    // no enemy within range
-    if (attacker == nullptr) {
-        TryAttackWithStalker();
-    }
-    
-    // stalkers in defense range attack the attacker
     for (const auto& u : units) {
 		if (u->unit_type == UNIT_TYPEID::PROTOSS_STALKER) {
-			distance_to_spawn = Distance3D(nexsus->pos, u->pos);
+            distance_to_spawn = DistanceSquared2D(nexsus->pos, u->pos);
 			if (distance_to_spawn < defense_range) {
-                StalkerDefendBase(u, attacker);
+                if (attacker == nullptr) {
+                    // no enemy in defense range
+                    StalkerAttack(u);
+                }
+                else {
+                    // stalkers in defense range attack the attacker
+                    StalkerDefend(u, attacker);
+                }
 			}
-			else { // continue attacking when outside of defense range
-                if (!TryAttackWithStalker()) { // comeback if attack is not ready
-                    Actions()->UnitCommand(u, ABILITY_ID::SMART, nexsus);
-                 }
+			else {
+                // continue attacking if way outside of defense range
+                if (distance_to_spawn > defense_range + 20) {
+                    StalkerAttack(u);
+                }
+                else {
+                    // outside of defense range but not too far
+                    Actions()->UnitCommand(u, ABILITY_ID::MOVE_MOVE, nexsus);
+                }
 			}
 		}
 	}
 }
 
+const Unit* BasicSc2Bot::FindNearestEnemy(const Point2D& start) {
+    Units units = Observation()->GetUnits(Unit::Enemy);
+    float distance = std::numeric_limits<float>::max();
+    const Unit* enemy = nullptr;
+     for (const auto& u : units){
+            float d = DistanceSquared2D(u->pos, start);
+            if (d<distance){
+                distance = d;
+                enemy = u;
+            }
+    }
+
+     return enemy;
+}
