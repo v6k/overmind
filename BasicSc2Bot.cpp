@@ -35,6 +35,10 @@ bool BasicSc2Bot::TryBuildAssimilator(){
         return false;
     }
 
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) < 1) {
+        return false;
+    }
+
     if (CountUnitType(UNIT_TYPEID::PROTOSS_ASSIMILATOR) >= 2){
         return false;
     }
@@ -60,7 +64,11 @@ size_t BasicSc2Bot::CountUnitType(UNIT_TYPEID unit_type){
         return false;
     }
 
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) >= 3){
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_ASSIMILATOR) == 1) {
+        return false;
+    }
+
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) > 3){
         return false;
     }
 
@@ -106,7 +114,6 @@ void BasicSc2Bot::TryChronoBoost() {
     const GameInfo& game_info = Observation()->GetGameInfo();
     const Unit* nexus = FindNexus();
     if (first_chrono && (nexus->energy >= 50)) {
-        //Actions()->UnitCommand(nexus, );
         // ABILITY_ID::EFFECT_CHRONOBOOST does not work, ABILITY_ID(3755) is chronoboost
         Actions()->UnitCommand(nexus, ABILITY_ID(3755), nexus);
         first_chrono = false;
@@ -262,7 +269,8 @@ const Unit* BasicSc2Bot::FindNearestGateway(const Point2D& start) {
 void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
     switch (unit->unit_type.ToType()){
         case UNIT_TYPEID::PROTOSS_NEXUS:{
-            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) < 20){
+            
+            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) < 21){
                 Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_PROBE);
             }
             break;
