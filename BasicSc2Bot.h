@@ -29,6 +29,8 @@ public:
 	const Unit* FindNexus();
 	const Unit* FindNearestGateway(const Point2D& start);
 	void TryAttacWithStalker();
+	void TryFillVespeneGas();
+	const Unit* GetProbe(ABILITY_ID ability_type_for_structure);
 	void TryChronoBoost();
 private:
 	bool first_chrono;

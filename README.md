@@ -16,8 +16,8 @@ Download and install [Visual Studio 2019](https://www.visualstudio.com/downloads
 
 ```bat
 :: Clone the project
-$ git clone --recursive https://github.com/solinas/BasicSc2Bot.git
-$ cd BasicSc2Bot
+$ git clone --recursive https://github.com/v6k/overmind.git
+$ cd overmind
 
 :: Create build directory.
 $ mkdir build
@@ -39,8 +39,8 @@ Note: Try opening the SC2 game client before installing. If the game crashes bef
 
 ```bat
 :: Clone the project
-$ git clone --recursive https://github.com/solinas/BasicSc2Bot.git
-$ cd BasicSc2Bot
+$ git clone --recursive https://github.com/v6k/overmind.git
+$ cd overmind
 
 :: Create build directory.
 $ mkdir build
