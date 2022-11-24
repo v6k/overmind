@@ -14,7 +14,6 @@ bool BasicSc2Bot::TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_
         const Unit* vespene_target = FindNearestVespeneGeyser(unit_to_build->pos);
         Actions()->UnitCommand(unit_to_build, ability_type_for_structure, vespene_target);
     }
-
     return true;
 }
 
@@ -28,24 +27,28 @@ bool BasicSc2Bot::TryBuildPylon(){
     return TryBuildStructure(ABILITY_ID::BUILD_PYLON);
 }
 
-
 bool BasicSc2Bot::TryBuildAssimilator(){
     const ObservationInterface* observation = Observation();
     if (CountUnitType(UNIT_TYPEID::PROTOSS_PYLON) < 1){
         return false;
     }
 
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_ASSIMILATOR) >= 2){
+
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) < 1) {
+        return false;
+    }
+
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_ASSIMILATOR) > 2){
+
         return false;
     }
 
     return TryBuildStructure(ABILITY_ID::BUILD_ASSIMILATOR);
 }
 
-
-
 void BasicSc2Bot::OnGameStart() { 
     first_chrono = true;
+    building_gateway = false;
     return;
 }
 
@@ -60,10 +63,14 @@ size_t BasicSc2Bot::CountUnitType(UNIT_TYPEID unit_type){
         return false;
     }
 
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) >= 3){
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_ASSIMILATOR) == 1) {
         return false;
     }
 
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) > 5){
+        return false;
+    }
+    building_gateway = true;
     return TryBuildStructure(ABILITY_ID::BUILD_GATEWAY);
  }
 
@@ -74,7 +81,7 @@ size_t BasicSc2Bot::CountUnitType(UNIT_TYPEID unit_type){
         return false;
     }
 
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) < 1){
+    if (building_gateway){
         return false;
     }
 
@@ -100,13 +107,11 @@ void BasicSc2Bot::TryAttacWithStalker(){
     }
  }
 
-
 void BasicSc2Bot::TryChronoBoost() {
     const ObservationInterface* observation = Observation();
     const GameInfo& game_info = Observation()->GetGameInfo();
     const Unit* nexus = FindNexus();
     if (first_chrono && (nexus->energy >= 50)) {
-        //Actions()->UnitCommand(nexus, );
         // ABILITY_ID::EFFECT_CHRONOBOOST does not work, ABILITY_ID(3755) is chronoboost
         Actions()->UnitCommand(nexus, ABILITY_ID(3755), nexus);
         first_chrono = false;
@@ -118,7 +123,6 @@ void BasicSc2Bot::TryChronoBoost() {
         }
     }
 }
-
 
 const Unit* BasicSc2Bot::GetProbe(ABILITY_ID ability_type_for_structure){
     // Get a probe which is not harvesting vespene gas and has order of building
@@ -177,7 +181,6 @@ const Unit* BasicSc2Bot::FindNearestMineralPatch(const Point2D& start){
     }
     return target;
 }
-
 
 const Unit* BasicSc2Bot::FindNearestVespeneGeyser(const Point2D& start){
     Units units = Observation()->GetUnits(Unit::Alliance::Neutral);
@@ -256,9 +259,6 @@ const Unit* BasicSc2Bot::FindNearestGateway(const Point2D& start) {
     return target;
 }
 
-
-
-
 void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
     switch (unit->unit_type.ToType()){
         case UNIT_TYPEID::PROTOSS_NEXUS:{
@@ -284,7 +284,6 @@ void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
         }
     }
 }
-
 
 void BasicSc2Bot::OnUnitCreated(const Unit* unit) {
    switch (unit->unit_type.ToType()){
