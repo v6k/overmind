@@ -14,6 +14,7 @@ bool BasicSc2Bot::TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_
         const Unit* vespene_target = FindNearestVespeneGeyser(unit_to_build->pos);
         Actions()->UnitCommand(unit_to_build, ability_type_for_structure, vespene_target);
     }
+
     return true;
 }
 
@@ -27,24 +28,29 @@ bool BasicSc2Bot::TryBuildPylon(){
     return TryBuildStructure(ABILITY_ID::BUILD_PYLON);
 }
 
+
 bool BasicSc2Bot::TryBuildAssimilator(){
     const ObservationInterface* observation = Observation();
     if (CountUnitType(UNIT_TYPEID::PROTOSS_PYLON) < 1){
         return false;
     }
 
-
+<<<<<<< HEAD
     if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) < 1) {
         return false;
     }
 
     if (CountUnitType(UNIT_TYPEID::PROTOSS_ASSIMILATOR) > 2){
-
+=======
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_ASSIMILATOR) >= 2){
+>>>>>>> 399fa9339b723e335a15ef759b42bbcc0791a850
         return false;
     }
 
     return TryBuildStructure(ABILITY_ID::BUILD_ASSIMILATOR);
 }
+
+
 
 void BasicSc2Bot::OnGameStart() { 
     first_chrono = true;
@@ -63,11 +69,15 @@ size_t BasicSc2Bot::CountUnitType(UNIT_TYPEID unit_type){
         return false;
     }
 
+<<<<<<< HEAD
     if (CountUnitType(UNIT_TYPEID::PROTOSS_ASSIMILATOR) == 1) {
+=======
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) >= 3){
+>>>>>>> 399fa9339b723e335a15ef759b42bbcc0791a850
         return false;
     }
 
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) > 3){
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) > 5){
         return false;
     }
     building_gateway = true;
@@ -81,7 +91,7 @@ size_t BasicSc2Bot::CountUnitType(UNIT_TYPEID unit_type){
         return false;
     }
 
-    if (!building_gateway){
+    if (building_gateway){
         return false;
     }
 
@@ -101,50 +111,12 @@ void BasicSc2Bot::TryAttacWithStalker(){
         attack = true;
         for (const auto& u : units){
             if (u->unit_type == UNIT_TYPEID::PROTOSS_STALKER){
-                Actions()->UnitCommand(u, ABILITY_ID::ATTACK_ATTACK, enemyBase);
+                Actions()->UnitCommand(u, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
             }
         }
     }
  }
 
-
-void BasicSc2Bot::TryScoutWithProbe() {
-
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) < 1) {
-        return;
-    }
-
-    const ObservationInterface* observation = Observation();
-    const GameInfo& game_info = Observation()->GetGameInfo();
-    Units units = Observation()->GetUnits(Unit::Alliance::Self);
-    std::vector<Point2D> enemyStartLocation = game_info.enemy_start_locations;
-
-    for (const auto& u:units) {
-        if (u->unit_type == UNIT_TYPEID::PROTOSS_PROBE) {
-            scout = u;
-            scout_id = u->tag;
-            break;
-        }
-    }
-    
-    for (int i = 0; i < enemyStartLocation.size(); i++) {
-        Actions()->UnitCommand(scout, ABILITY_ID::ATTACK_ATTACK, enemyStartLocation[i], true);
-    }
-
-    scouting = true;
-}
-
-void BasicSc2Bot::checkScout() {
-    if (!(scout->is_alive)) {
-        scouted = true;
-        Point2D scoutTempLocation;
-        scoutTempLocation.x = scout->pos.x;
-        scoutTempLocation.y = scout->pos.y;
-        scouting = false;
-        std::cout << "scouted base at " << scoutTempLocation.x << ", " << scoutTempLocation.y << "\n";
-        enemyBase = scoutTempLocation;
-    }
-}
 
 void BasicSc2Bot::TryChronoBoost() {
     const ObservationInterface* observation = Observation();
@@ -163,12 +135,13 @@ void BasicSc2Bot::TryChronoBoost() {
     }
 }
 
+
 const Unit* BasicSc2Bot::GetProbe(ABILITY_ID ability_type_for_structure){
     // Get a probe which is not harvesting vespene gas and has order of building
     Units units = Observation()->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::PROTOSS_PROBE));
     for (const auto& unit : units){
         for (const auto& order : unit->orders){
-            if (order.ability_id != ABILITY_ID::HARVEST_GATHER && order.ability_id != ability_type_for_structure && unit->tag != scout_id){
+            if (order.ability_id != ABILITY_ID::HARVEST_GATHER && order.ability_id != ability_type_for_structure){
                 return unit;
             }
         }
@@ -194,20 +167,13 @@ const Unit* BasicSc2Bot::GetProbe(ABILITY_ID ability_type_for_structure){
     }         
  }
 
-
 void BasicSc2Bot::OnStep() {
-    if (!scouted && !scouting) {
-        TryScoutWithProbe();
-    }
-    if (!scouted) {
-        checkScout();
-    }
     TryBuildPylon();
     TryBuildAssimilator();
     TryFillVespeneGas();
+    TryBuildGateway();
     TryBuildCyberneticsCore();
     TryAttacWithStalker();
-    TryBuildGateway();
     TryChronoBoost();
     return; 
 }
@@ -227,6 +193,7 @@ const Unit* BasicSc2Bot::FindNearestMineralPatch(const Point2D& start){
     }
     return target;
 }
+
 
 const Unit* BasicSc2Bot::FindNearestVespeneGeyser(const Point2D& start){
     Units units = Observation()->GetUnits(Unit::Alliance::Neutral);
@@ -305,34 +272,27 @@ const Unit* BasicSc2Bot::FindNearestGateway(const Point2D& start) {
     return target;
 }
 
+
+
+
 void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
     switch (unit->unit_type.ToType()){
         case UNIT_TYPEID::PROTOSS_NEXUS:{
+<<<<<<< HEAD
+            
+            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) < 22){
+=======
             if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) < 20){
+>>>>>>> 399fa9339b723e335a15ef759b42bbcc0791a850
                 Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_PROBE);
             }
             break;
         }
         case UNIT_TYPEID::PROTOSS_PROBE:{
-
-           if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) > 15){
-                const Unit* assimilator_target = FindNearestAssimilator(unit->pos);
-                if (!assimilator_target){
-                    break;
-                }
-                Actions()->UnitCommand(unit, ABILITY_ID::SMART, assimilator_target);
-           }else{
-                const Unit* mineral_target = FindNearestMineralPatch(unit->pos);
-                if (!mineral_target){
-                    break;
-                }
-                Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
-
             // mine mineral if idle
             const Unit* mineral_target = FindNearestMineralPatch(unit->pos);
             if (!mineral_target){
                 break;
-
             }
             Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
         }
@@ -345,6 +305,7 @@ void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
         }
     }
 }
+
 
 void BasicSc2Bot::OnUnitCreated(const Unit* unit) {
    switch (unit->unit_type.ToType()){
