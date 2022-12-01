@@ -306,37 +306,33 @@ const Unit* BasicSc2Bot::FindNearestGateway(const Point2D& start) {
 }
 
 void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
-    switch (unit->unit_type.ToType()){
-        case UNIT_TYPEID::PROTOSS_NEXUS:{
-            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) < 20){
+    switch (unit->unit_type.ToType()) {
+        case UNIT_TYPEID::PROTOSS_NEXUS: {
+            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) < 20) {
                 Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_PROBE);
             }
             break;
         }
-        case UNIT_TYPEID::PROTOSS_PROBE:{
+        case UNIT_TYPEID::PROTOSS_PROBE: {
 
-           if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) > 15){
+            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) > 15) {
                 const Unit* assimilator_target = FindNearestAssimilator(unit->pos);
-                if (!assimilator_target){
+                if (!assimilator_target) {
                     break;
                 }
                 Actions()->UnitCommand(unit, ABILITY_ID::SMART, assimilator_target);
-           }else{
+            }
+            else {
+                // mine mineral if idle
                 const Unit* mineral_target = FindNearestMineralPatch(unit->pos);
-                if (!mineral_target){
+                if (!mineral_target) {
                     break;
+
                 }
                 Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
-
-            // mine mineral if idle
-            const Unit* mineral_target = FindNearestMineralPatch(unit->pos);
-            if (!mineral_target){
-                break;
-
             }
-            Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
         }
-        case UNIT_TYPEID::PROTOSS_GATEWAY:{
+        case UNIT_TYPEID::PROTOSS_GATEWAY: {
             Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_STALKER);
         }
 
