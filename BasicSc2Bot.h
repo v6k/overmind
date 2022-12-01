@@ -26,6 +26,11 @@ public:
 	const Unit* FindNearestMineralPatch(const Point2D& start);
 	const Unit* FindNearestVespeneGeyser(const Point2D& start);
 	const Unit* FindNearestAssimilator(const Point2D& start);
+	bool TryAttackWithStalker();
+	void StalkerAttack(const Unit *stalker);
+	void StalkerDefend(const Unit *stalker, const Unit *attacker);
+	void StalkerCommander();
+	const Unit* FindNearestEnemy(const Point2D& start);
 	const Unit* FindNexus();
 	const Unit* FindNearestGateway(const Point2D& start);
 	void TryAttacWithStalker();
@@ -43,6 +48,9 @@ private:
 	const Unit* scout;
 	Point3D scoutLocation;
   Tag scout_id;
+  // can play around with values
+	int defense_range = pow(double(30), double(2)); // defense_range^2 
+	int stalkers_to_build = 40;
 };
 
 #endif
