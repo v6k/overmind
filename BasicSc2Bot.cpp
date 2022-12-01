@@ -1,6 +1,5 @@
 #include "BasicSc2Bot.h"
 
-bool attack = false;
 bool BasicSc2Bot::TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_TYPEID unit_type){
     const Unit* unit_to_build = GetProbe(ability_type_for_structure);
 
@@ -99,9 +98,7 @@ bool BasicSc2Bot::TryAttackWithStalker(){
     const GameInfo& game_info = Observation()->GetGameInfo();
     bool stalker_attacking = false;
 
-
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_STALKER) > stalkers_to_build || attack) {
-        attack = true;
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_STALKER) > stalkers_to_build) {
         for (const auto& u : units) {
             if (u->unit_type == UNIT_TYPEID::PROTOSS_STALKER) {
                 Actions()->UnitCommand(u, ABILITY_ID::ATTACK_ATTACK, enemyBase);
@@ -340,13 +337,7 @@ void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
             }
         }
         case UNIT_TYPEID::PROTOSS_STALKER: {
-            Units units = Observation()->GetUnits();
-            const Unit* nexsus = nullptr;
-            for (auto& u : units) {
-                if (u->unit_type == UNIT_TYPEID::PROTOSS_NEXUS) {
-                    nexsus = u;
-                }
-            }
+            const Unit* nexsus = FindNexus();
             Actions()->UnitCommand(unit, ABILITY_ID::MOVE_MOVE, nexsus);
             break;
         }
@@ -378,8 +369,13 @@ void BasicSc2Bot::StalkerAttack(const Unit* stalker) {
     }
 }
 
-void BasicSc2Bot::StalkerDefend(const Unit *stalker, const Unit *attacker) {
-    Actions()->UnitCommand(stalker, ABILITY_ID::ATTACK_ATTACK, attacker);
+void BasicSc2Bot::StalkerDefend(const Unit *stalker, const Unit *attacker, const Unit *kite) {
+    if (stalker->weapon_cooldown <= 0) {
+        Actions()->UnitCommand(stalker, ABILITY_ID::ATTACK_ATTACK, attacker);
+    }
+    else {
+        Actions()->UnitCommand(stalker, ABILITY_ID::MOVE_MOVE, kite);
+    }
 }
 
 void BasicSc2Bot::StalkerCommander() {
@@ -387,7 +383,7 @@ void BasicSc2Bot::StalkerCommander() {
     Units units = Observation()->GetUnits(Unit::Alliance::Self);
     Units enemies = Observation()->GetUnits(Unit::Enemy);
     const GameInfo& game_info = Observation()->GetGameInfo();
-    const Unit *nexsus = nullptr;
+    const Unit* nexsus = FindNexus();
     const Unit *attacker = nullptr;
     float distance_to_spawn;
 
@@ -395,13 +391,6 @@ void BasicSc2Bot::StalkerCommander() {
     if (enemies.empty()) {
         TryAttackWithStalker();
         return;
-    }
-
-    // get nexsus to use as starting point to defend
-    for (const auto& u : units) {
-        if (u->unit_type == UNIT_TYPEID::PROTOSS_NEXUS) {
-            nexsus = u;
-        }
     }
 
     // get an attacker in the defense range of nexsus
@@ -420,7 +409,7 @@ void BasicSc2Bot::StalkerCommander() {
                 }
                 else {
                     // stalkers in defense range attack the attacker
-                    StalkerDefend(u, attacker);
+                    StalkerDefend(u, attacker, nexsus);
                 }
 			}
 			else {

@@ -28,7 +28,7 @@ public:
 	const Unit* FindNearestAssimilator(const Point2D& start);
 	bool TryAttackWithStalker();
 	void StalkerAttack(const Unit *stalker);
-	void StalkerDefend(const Unit *stalker, const Unit *attacker);
+	void StalkerDefend(const Unit *stalker, const Unit *attacker, const Unit *kite);
 	void StalkerCommander();
 	const Unit* FindNearestEnemy(const Point2D& start);
 	const Unit* FindNexus();
@@ -49,7 +49,7 @@ private:
   Tag scout_id;
   // can play around with values
 	int defense_range = pow(double(30), double(2)); // defense_range^2 
-	int stalkers_to_build = 25;
+	int stalkers_to_build = 10;
 };
 
 #endif
