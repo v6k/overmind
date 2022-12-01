@@ -19,7 +19,7 @@ public:
 	virtual void OnUnitCreated(const Unit*);
 	size_t CountUnitType(UNIT_TYPEID unit_type);
 	bool TryBuildGateway();
-  bool TryBuildCyberneticsCore();
+	bool TryBuildCyberneticsCore();
 	bool TryBuildAssimilator();
 	bool TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_TYPEID unit_type = UNIT_TYPEID::PROTOSS_PROBE);
 	bool TryBuildPylon();
@@ -28,7 +28,7 @@ public:
 	const Unit* FindNearestAssimilator(const Point2D& start);
 	bool TryAttackWithStalker();
 	void StalkerAttack(const Unit *stalker);
-	void StalkerDefend(const Unit *stalker, const Unit *attacker, const Unit *kite);
+	void StalkerDefend(const Unit *stalker, const Unit *attacker, const Point3D &kite);
 	void StalkerCommander();
 	const Unit* FindNearestEnemy(const Point2D& start);
 	const Unit* FindNexus();
@@ -38,16 +38,17 @@ public:
 	void TryFillVespeneGas();
 	const Unit* GetProbe(ABILITY_ID ability_type_for_structure);
 	void TryChronoBoost();
-private:
+
+	private:
 	bool first_chrono;
 	bool building_gateway;
-  Point2D enemyBase;
+	Point2D enemyBase;
 	bool scouted = false;
 	bool scouting = false;
 	const Unit* scout;
 	Point3D scoutLocation;
-  Tag scout_id;
-  // can play around with values
+	Tag scout_id;
+	// can play around with values
 	int defense_range = pow(double(30), double(2)); // defense_range^2 
 	int stalkers_to_build = 10;
 };
