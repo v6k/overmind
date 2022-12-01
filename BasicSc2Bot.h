@@ -33,7 +33,6 @@ public:
 	const Unit* FindNearestEnemy(const Point2D& start);
 	const Unit* FindNexus();
 	const Unit* FindNearestGateway(const Point2D& start);
-	void TryAttacWithStalker();
 	void TryScoutWithProbe();
 	void checkScout();
 	void TryFillVespeneGas();
@@ -50,7 +49,7 @@ private:
   Tag scout_id;
   // can play around with values
 	int defense_range = pow(double(30), double(2)); // defense_range^2 
-	int stalkers_to_build = 40;
+	int stalkers_to_build = 25;
 };
 
 #endif

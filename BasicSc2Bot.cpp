@@ -49,6 +49,7 @@ bool BasicSc2Bot::TryBuildAssimilator(){
 void BasicSc2Bot::OnGameStart() { 
     first_chrono = true;
     building_gateway = false;
+    enemyBase = Observation()->GetGameInfo().enemy_start_locations.front();
     return;
 }
 
@@ -211,7 +212,7 @@ void BasicSc2Bot::OnStep() {
     TryFillVespeneGas();
     TryBuildCyberneticsCore();
     StalkerCommander();
-    TryAttacWithStalker();
+    TryAttackWithStalker();
     TryBuildGateway();
     TryChronoBoost();
     return; 
@@ -373,7 +374,7 @@ void BasicSc2Bot::OnUnitCreated(const Unit* unit) {
 
 void BasicSc2Bot::StalkerAttack(const Unit* stalker) {
     if (CountUnitType(UNIT_TYPEID::PROTOSS_STALKER) > stalkers_to_build) {
-        Actions()->UnitCommand(stalker, ABILITY_ID::ATTACK_ATTACK, Observation()->GetGameInfo().enemy_start_locations.front());
+        Actions()->UnitCommand(stalker, ABILITY_ID::ATTACK_ATTACK, enemyBase);
     }
 }
 
