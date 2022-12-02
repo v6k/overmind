@@ -38,8 +38,7 @@ bool BasicSc2Bot::TryBuildAssimilator(){
         return false;
     }
 
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_ASSIMILATOR) > 2){
-
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_ASSIMILATOR) >= 2){
         return false;
     }
 
