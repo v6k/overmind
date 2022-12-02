@@ -38,10 +38,12 @@ public:
 	void TryFillVespeneGas();
 	const Unit* GetProbe(ABILITY_ID ability_type_for_structure);
 	void TryChronoBoost();
+	void TryTrainStalker();
 
 	private:
 	bool first_chrono;
 	bool building_gateway;
+	bool built_first_pylon = false;
 	Point2D enemyBase;
 	bool scouted = false;
 	bool scouting = false;
