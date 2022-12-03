@@ -9,9 +9,10 @@ bool BasicSc2Bot::TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_
     if (ability_type_for_structure != ABILITY_ID::BUILD_ASSIMILATOR){
         Actions()->UnitCommand(unit_to_build, ability_type_for_structure,
                 Point2D(unit_to_build->pos.x + rx * 15.0f, unit_to_build->pos.y + ry * 15.0f));
+
     }else{
-        const Unit* vespene_target = FindNearestVespeneGeyser(unit_to_build->pos);
-        Actions()->UnitCommand(unit_to_build, ability_type_for_structure, vespene_target);
+		const Unit* vespene_target = FindNearestVespeneGeyser(unit_to_build->pos);
+		Actions()->UnitCommand(unit_to_build, ability_type_for_structure, vespene_target);
     }
     return true;
 }
@@ -39,7 +40,6 @@ bool BasicSc2Bot::TryBuildAssimilator(){
     if (CountUnitType(UNIT_TYPEID::PROTOSS_PYLON) < 1){
         return false;
     }
-    
 
     if (CountUnitType(UNIT_TYPEID::PROTOSS_GATEWAY) < 1) {
         return false;
@@ -149,13 +149,26 @@ void BasicSc2Bot::TryScoutWithProbe() {
 
 void BasicSc2Bot::checkScout() {
     if (!(scout->is_alive)) {
+        const ObservationInterface* observation = Observation();
+		const GameInfo& game_info = Observation()->GetGameInfo();
+		std::vector<Point2D> enemyStartLocation = game_info.enemy_start_locations;
+        Point2D closestEnemy = enemyStartLocation[0];
+
         scouted = true;
         Point2D scoutTempLocation;
         scoutTempLocation.x = scout->pos.x;
         scoutTempLocation.y = scout->pos.y;
         scouting = false;
+        for (const auto location : enemyStartLocation) {
+            if (DistanceSquared2D(location, scoutTempLocation) < DistanceSquared2D(closestEnemy, scoutTempLocation)) {
+                closestEnemy = location;
+            }
+        }
+        enemyBase = closestEnemy;
+        /*
         std::cout << "scouted base at " << scoutTempLocation.x << ", " << scoutTempLocation.y << "\n";
         enemyBase = scoutTempLocation;
+        */
     }
 }
 
@@ -195,11 +208,14 @@ const Unit* BasicSc2Bot::GetProbe(ABILITY_ID ability_type_for_structure){
         return;
     }
     for (const auto& gas : vespene_gas) {
-        if (gas->assigned_harvesters < gas->ideal_harvesters){
-            Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, gas);
-        }else if (gas->assigned_harvesters > gas->ideal_harvesters){
-            const Unit* mineral_target = FindNearestMineralPatch(unit->pos);
-            Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
+        if (gas->build_progress == 1) {
+            if (gas->assigned_harvesters < gas->ideal_harvesters) {
+                Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, gas);
+            }
+            else if (gas->assigned_harvesters > gas->ideal_harvesters) {
+                const Unit* mineral_target = FindNearestMineralPatch(unit->pos);
+                Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
+            }
         }
     }         
  }
@@ -224,10 +240,10 @@ const Unit* BasicSc2Bot::GetProbe(ABILITY_ID ability_type_for_structure){
 
      for (const auto& u : units) {
          if (u->unit_type == UNIT_TYPEID::PROTOSS_GATEWAY) {
-             if (CountUnitType(UNIT_TYPEID::PROTOSS_CYBERNETICSCORE) >= 1 && Observation()->GetMinerals() >= 125 && Observation()->GetVespene()) {
+             if (CountUnitType(UNIT_TYPEID::PROTOSS_CYBERNETICSCORE) >= 1 && u->orders.size() == 0 && Observation()->GetMinerals() >= 125 && Observation()->GetVespene()) {
                  Actions()->UnitCommand(u, ABILITY_ID::TRAIN_STALKER);
                  if (nexus->energy >= 50) {
-                     Actions()->UnitCommand(nexus, ABILITY_ID(3755), u);
+					 Actions()->UnitCommand(nexus, ABILITY_ID(3755), u);
                  }
              }
          }
@@ -350,30 +366,23 @@ const Unit* BasicSc2Bot::FindNearestGateway(const Point2D& start) {
 void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
     switch (unit->unit_type.ToType()) {
         case UNIT_TYPEID::PROTOSS_NEXUS: {
-            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) < 20) {
+            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) < 22) {
                 Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_PROBE);
             }
             break;
         }
         case UNIT_TYPEID::PROTOSS_PROBE: {
-
-            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) > 15) {
-                const Unit* assimilator_target = FindNearestAssimilator(unit->pos);
-                if (!assimilator_target) {
-                    break;
-                }
-                Actions()->UnitCommand(unit, ABILITY_ID::SMART, assimilator_target);
-            }
-            else {
-                // mine mineral if idle
-                const Unit* mineral_target = FindNearestMineralPatch(unit->pos);
-                if (!mineral_target) {
-                    break;
-;
-                }
-                Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
+            if (unit->tag == scout_id) {
                 break;
             }
+			// mine mineral if idle
+			const Unit* mineral_target = FindNearestMineralPatch(Observation()->GetStartLocation());
+			if (!mineral_target) {
+				break;
+;
+			}
+			Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
+			break;
         }
         case UNIT_TYPEID::PROTOSS_STALKER: {
             const Unit* nexus = FindNexus();
@@ -423,7 +432,7 @@ void BasicSc2Bot::StalkerDefend(const Unit *stalker, const Unit *attacker, const
     if (stalker->weapon_cooldown <= 0) {
         Actions()->UnitCommand(stalker, ABILITY_ID::ATTACK_ATTACK, attacker);
     }
-    else {
+    else if (stalker->shield < stalker->shield_max) {
         Actions()->UnitCommand(stalker, ABILITY_ID::MOVE_MOVE, kite);
     }
 }
@@ -464,11 +473,12 @@ void BasicSc2Bot::StalkerCommander() {
 			}
 			else {
                 // continue attacking if way outside of defense range
-                if (distance_to_spawn > defense_range) {
+                if (distance_to_spawn >= defense_range) {
                     StalkerAttack(u);
                 }
                 else {
-                    // outside of defense range but not too far
+                    // within defense range
+                    std::cout << distance_to_spawn << std::endl;
                     Actions()->UnitCommand(u, ABILITY_ID::MOVE_MOVE, nexus->pos);
                 }
 			}
