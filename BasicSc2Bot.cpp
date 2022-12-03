@@ -50,7 +50,10 @@ void BasicSc2Bot::OnGameStart() {
     first_chrono = true;
     building_gateway = false;
     enemyBase = Observation()->GetGameInfo().enemy_start_locations.front();
-    return;
+    min = Observation()->GetGameInfo().playable_min;
+    max = Observation()->GetGameInfo().playable_max;
+    createPointsToGo();
+    locationToGo = points_to_go[points_to_go_index];
 }
 
 size_t BasicSc2Bot::CountUnitType(UNIT_TYPEID unit_type){
@@ -100,7 +103,11 @@ bool BasicSc2Bot::TryAttackWithStalker(){
     bool stalker_attacking = false;
 
 
-    if (CountUnitType(UNIT_TYPEID::PROTOSS_STALKER) > stalkers_to_build || attack) {
+    if (CountUnitType(UNIT_TYPEID::PROTOSS_STALKER) >= max_stalkers && !traversing) {
+        TraverseMap();        
+    }
+    
+    else if (CountUnitType(UNIT_TYPEID::PROTOSS_STALKER) > stalkers_to_build || attack) {
         attack = true;
         for (const auto& u : units) {
             if (u->unit_type == UNIT_TYPEID::PROTOSS_STALKER) {
@@ -111,6 +118,56 @@ bool BasicSc2Bot::TryAttackWithStalker(){
     }
 
     return stalker_attacking;
+ }
+
+ void BasicSc2Bot::createPointsToGo() {
+    double x_min = min.x;
+    double y_min = min.y;
+    
+    double x_max = max.x;
+    double y_max = max.y;
+    
+    for (double x = x_min; x < x_max; x += 25) {
+        for (double y = y_min; y < y_max; y+=25) {
+            points_to_go.push_back(Point2D(x,y));
+        }
+    }
+ }
+
+ void BasicSc2Bot::TraverseMap() {
+
+    Units units = Observation()->GetUnits(Unit::Alliance::Self);
+    cout << "traversing\n";
+    //cout << points_to_go_index << "\n";
+
+    /*for (const auto& u : units) {
+        if (u->unit_type == UNIT_TYPEID::PROTOSS_STALKER) {
+            Actions()->UnitCommand(u, ABILITY_ID::ATTACK_ATTACK, locationToGo, true);
+        }
+    }
+
+    points_to_go_index++;
+
+    if (points_to_go_index >= points_to_go.size()) {
+        traversing = true;
+    }
+
+    locationToGo = points_to_go[points_to_go_index];
+    */
+
+   for (int i = 0; i < points_to_go.size(); i++) {
+        cout << points_to_go[i].x  << "," << points_to_go[i].y << endl;
+        for (const auto& u : units) {
+            if (u->unit_type == UNIT_TYPEID::PROTOSS_STALKER) {
+                Actions()->UnitCommand(u, ABILITY_ID::ATTACK_ATTACK, points_to_go[i], true);
+            }
+        }
+   }
+
+   traversing = true;
+
+    return;
+
  }
 
 
@@ -320,8 +377,11 @@ void BasicSc2Bot::OnUnitIdle(const Unit* unit) {
             break;
         }
         case UNIT_TYPEID::PROTOSS_PROBE: {
+            if (unit->tag == scout_id) {
+                break;
+            }
 
-            if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) > 15) {
+            else if (CountUnitType(UNIT_TYPEID::PROTOSS_PROBE) > 15) {
                 const Unit* assimilator_target = FindNearestAssimilator(unit->pos);
                 if (!assimilator_target) {
                     break;

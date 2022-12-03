@@ -10,6 +10,7 @@
 #include <random>
 
 using namespace sc2;
+using namespace std;
 
 class BasicSc2Bot : public Agent {
 public:
@@ -19,7 +20,7 @@ public:
 	virtual void OnUnitCreated(const Unit*);
 	size_t CountUnitType(UNIT_TYPEID unit_type);
 	bool TryBuildGateway();
-  bool TryBuildCyberneticsCore();
+  	bool TryBuildCyberneticsCore();
 	bool TryBuildAssimilator();
 	bool TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_TYPEID unit_type = UNIT_TYPEID::PROTOSS_PROBE);
 	bool TryBuildPylon();
@@ -38,18 +39,27 @@ public:
 	void TryFillVespeneGas();
 	const Unit* GetProbe(ABILITY_ID ability_type_for_structure);
 	void TryChronoBoost();
+	void TraverseMap();
+	void createPointsToGo();
 private:
 	bool first_chrono;
 	bool building_gateway;
-  Point2D enemyBase;
+  	Point2D enemyBase;
 	bool scouted = false;
 	bool scouting = false;
 	const Unit* scout;
-	Point3D scoutLocation;
-  Tag scout_id;
+  	Tag scout_id;
   // can play around with values
 	int defense_range = pow(double(30), double(2)); // defense_range^2 
-	int stalkers_to_build = 25;
+	int stalkers_to_build = 15;
+	int max_stalkers = 25;
+	Point2D min;
+    Point2D max;
+	vector<Point2D> points_to_go;
+	Point2D locationToGo;
+	int points_to_go_index = 0;
+	bool traversing = false;
+
 };
 
 #endif
