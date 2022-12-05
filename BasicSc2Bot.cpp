@@ -50,7 +50,6 @@ bool BasicSc2Bot::TryBuildAssimilator(){
     }
 
     if (CountUnitType(UNIT_TYPEID::PROTOSS_ASSIMILATOR) >= 2){
-
         return false;
     }
 
