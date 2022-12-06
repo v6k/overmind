@@ -1,8 +1,7 @@
 # OverMind
 A SC2 Bot for CMPUT 350 at UAlberta.
 
-This bot works with our fork of [Sc2LadderServer](https://github.com/solinas/Sc2LadderServer) which will be used to run the tournament at the end of the term. It should help you
-set up the build process with the correct version of SC2 API so you can focus on creating your bot.
+This bot works with our fork of [Sc2LadderServer](https://github.com/solinas/Sc2LadderServer) which will be used to run the tournament at the end of the term.
 
 # Developer Install / Compile Instructions
 ## Requirements
