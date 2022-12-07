@@ -52,7 +52,7 @@ public:
 	Tag scout_id;
 	// can play around with values
 	int defense_range = pow(double(30), double(2)); // defense_range^2 
-	int stalkers_to_build = 10;
+	int stalkers_to_build = 5; // actually 6 Stalkers
 };
 
 #endif
